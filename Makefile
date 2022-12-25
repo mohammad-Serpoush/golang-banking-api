@@ -6,6 +6,7 @@ migratedown:
 
 sqlc:
 	sqlc generate
-
+test:
+	go test -v -cover ./...
 
 .PHONY: migrateup migratedown sqlc
