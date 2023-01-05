@@ -1,10 +1,11 @@
 package db
 
 import (
-	"banking-api/util"
 	"context"
 	"testing"
 	"time"
+
+	"github.com/mohammad-Serpoush/golang-banking-api/util"
 
 	"github.com/stretchr/testify/require"
 )

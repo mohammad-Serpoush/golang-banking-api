@@ -1,9 +1,11 @@
 package api
 
 import (
-	db "banking-api/db/sqlc"
 	"database/sql"
+	"errors"
 	"net/http"
+
+	db "github.com/mohammad-Serpoush/golang-banking-api/db/sqlc"
 
 	"github.com/gin-gonic/gin"
 )
@@ -81,4 +83,48 @@ func (server *Server) listAccount(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, accounts)
 
+}
+
+type updateAccountBalanceRequestUri struct {
+	ID int64 `uri:"id" binding:"required,min=1"`
+}
+type updateAccountBalanceRequestBody struct {
+	AddedBalance int64 `json:"added_balance" binding:"required"`
+}
+
+func (server *Server) updateAccountBalance(ctx *gin.Context) {
+	var reqBody updateAccountBalanceRequestBody
+	var reqUri updateAccountBalanceRequestUri
+
+	if err := ctx.ShouldBindUri(&reqUri); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+	if err := ctx.ShouldBindJSON(&reqBody); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	account, err := server.store.GetAccount(ctx, reqUri.ID)
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, errorResponse(err))
+		return
+	}
+
+	if account.Balance+reqBody.AddedBalance <= 0 {
+		notEnoughBalanceErr := errors.New("account balance is not enough")
+		ctx.JSON(http.StatusBadRequest, errorResponse(notEnoughBalanceErr))
+		return
+	}
+
+	arg := db.UpdateAccountParams{
+		ID:      reqUri.ID,
+		Balance: account.Balance + reqBody.AddedBalance,
+	}
+	account, err = server.store.UpdateAccount(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	ctx.JSON(http.StatusOK, account)
 }
