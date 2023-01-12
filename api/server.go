@@ -27,6 +27,7 @@ func NewServer(store db.Store) *Server {
 	router.PUT("/accounts/:id", server.updateAccountBalance)
 
 	router.POST("/transfers", server.createTransfer)
+	router.POST("/users", server.createUser)
 
 	server.router = router
 	return server
