@@ -14,10 +14,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
 	"github.com/lib/pq"
+	mockdb "github.com/mohammad-Serpoush/golang-banking-api/db/mock"
+	db "github.com/mohammad-Serpoush/golang-banking-api/db/sqlc"
+	util "github.com/mohammad-Serpoush/golang-banking-api/util"
 	"github.com/stretchr/testify/require"
-	mockdb "github.com/techschool/simplebank/db/mock"
-	db "github.com/techschool/simplebank/db/sqlc"
-	"github.com/techschool/simplebank/util"
 )
 
 type eqCreateUserParamsMatcher struct {
@@ -50,7 +50,6 @@ func EqCreateUserParams(arg db.CreateUserParams, password string) gomock.Matcher
 
 func TestCreateUserAPI(t *testing.T) {
 	user, password := randomUser(t)
-
 	testCases := []struct {
 		name          string
 		body          gin.H
@@ -180,7 +179,7 @@ func TestCreateUserAPI(t *testing.T) {
 			store := mockdb.NewMockStore(ctrl)
 			tc.buildStubs(store)
 
-			server := newTestServer(t, store)
+			server := NewServer(store)
 			recorder := httptest.NewRecorder()
 
 			// Marshal body data to JSON
