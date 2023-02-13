@@ -1,0 +1,30 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:14-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=banking
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    depends_on:
+      - postgres
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_SOURCE=postgresql://postgres:postgres@postgres:5432/banking?sslmode=disable
+    entrypoint:
+      [
+        "/app/wait-for.sh",
+        "postgres:5432",
+        "--",
+        "/app/start.sh"
+      ]
+    command: [ "/app/main" ]
+
